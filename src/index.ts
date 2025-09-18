@@ -722,6 +722,189 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           required: ['projectId', 'filePath'],
         },
       },
+      // Merge Request 和 Issue 評論相關工具
+      {
+        name: 'gitlab_get_mr_notes',
+        description: '獲取合併請求的評論列表',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            projectId: {
+              type: 'string',
+              description: '專案 ID 或專案路徑',
+            },
+            mergeRequestIid: {
+              type: 'number',
+              description: '合併請求的 IID',
+            },
+            sort: {
+              type: 'string',
+              description: '排序方式 (預設: asc)',
+              enum: ['asc', 'desc'],
+              default: 'asc',
+            },
+            order_by: {
+              type: 'string',
+              description: '排序欄位 (預設: created_at)',
+              enum: ['created_at', 'updated_at'],
+              default: 'created_at',
+            },
+            per_page: {
+              type: 'number',
+              description: '每頁顯示數量 (預設: 100)',
+              default: 100,
+            },
+          },
+          required: ['projectId', 'mergeRequestIid'],
+        },
+      },
+      {
+        name: 'gitlab_create_mr_note',
+        description: '在合併請求中發表評論',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            projectId: {
+              type: 'string',
+              description: '專案 ID 或專案路徑',
+            },
+            mergeRequestIid: {
+              type: 'number',
+              description: '合併請求的 IID',
+            },
+            body: {
+              type: 'string',
+              description: '評論內容',
+            },
+            confidential: {
+              type: 'boolean',
+              description: '是否為機密評論 (預設: false)',
+              default: false,
+            },
+            internal: {
+              type: 'boolean',
+              description: '是否為內部評論 (預設: false)',
+              default: false,
+            },
+          },
+          required: ['projectId', 'mergeRequestIid', 'body'],
+        },
+      },
+      {
+        name: 'gitlab_update_mr_note',
+        description: '更新合併請求的評論',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            projectId: {
+              type: 'string',
+              description: '專案 ID 或專案路徑',
+            },
+            mergeRequestIid: {
+              type: 'number',
+              description: '合併請求的 IID',
+            },
+            noteId: {
+              type: 'number',
+              description: '評論 ID',
+            },
+            body: {
+              type: 'string',
+              description: '新的評論內容',
+            },
+          },
+          required: ['projectId', 'mergeRequestIid', 'noteId', 'body'],
+        },
+      },
+      {
+        name: 'gitlab_delete_mr_note',
+        description: '刪除合併請求的評論',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            projectId: {
+              type: 'string',
+              description: '專案 ID 或專案路徑',
+            },
+            mergeRequestIid: {
+              type: 'number',
+              description: '合併請求的 IID',
+            },
+            noteId: {
+              type: 'number',
+              description: '評論 ID',
+            },
+          },
+          required: ['projectId', 'mergeRequestIid', 'noteId'],
+        },
+      },
+      {
+        name: 'gitlab_get_issue_notes',
+        description: '獲取問題的評論列表',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            projectId: {
+              type: 'string',
+              description: '專案 ID 或專案路徑',
+            },
+            issueIid: {
+              type: 'number',
+              description: '問題的 IID',
+            },
+            sort: {
+              type: 'string',
+              description: '排序方式 (預設: asc)',
+              enum: ['asc', 'desc'],
+              default: 'asc',
+            },
+            order_by: {
+              type: 'string',
+              description: '排序欄位 (預設: created_at)',
+              enum: ['created_at', 'updated_at'],
+              default: 'created_at',
+            },
+            per_page: {
+              type: 'number',
+              description: '每頁顯示數量 (預設: 100)',
+              default: 100,
+            },
+          },
+          required: ['projectId', 'issueIid'],
+        },
+      },
+      {
+        name: 'gitlab_create_issue_note',
+        description: '在問題中發表評論',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            projectId: {
+              type: 'string',
+              description: '專案 ID 或專案路徑',
+            },
+            issueIid: {
+              type: 'number',
+              description: '問題的 IID',
+            },
+            body: {
+              type: 'string',
+              description: '評論內容',
+            },
+            confidential: {
+              type: 'boolean',
+              description: '是否為機密評論 (預設: false)',
+              default: false,
+            },
+            internal: {
+              type: 'boolean',
+              description: '是否為內部評論 (預設: false)',
+              default: false,
+            },
+          },
+          required: ['projectId', 'issueIid', 'body'],
+        },
+      },
     ],
   };
 });
@@ -1536,6 +1719,189 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             {
               type: 'text',
               text: `檔案修改歷史 (${filePath}):\n分支: ${ref || 'main'}\n檔案URL: ${fileUrl}\n\n找到 ${commits.length} 個相關提交:\n\n${historyDisplay}`,
+            },
+          ],
+        };
+      }
+
+      // Merge Request 評論相關案例
+      case 'gitlab_get_mr_notes': {
+        const { projectId, mergeRequestIid, sort, order_by, per_page } = args as {
+          projectId: string;
+          mergeRequestIid: number;
+          sort?: 'asc' | 'desc';
+          order_by?: 'created_at' | 'updated_at';
+          per_page?: number;
+        };
+
+        const notes = await gitlabClient.getMergeRequestNotes(projectId, mergeRequestIid, {
+          sort,
+          order_by,
+          per_page,
+        });
+
+        const project = await gitlabClient.getProject(projectId);
+        const mergeRequest = await gitlabClient.getMergeRequest(projectId, mergeRequestIid);
+
+        const notesList = notes
+          .filter(note => !note.system) // 過濾掉系統自動產生的評論
+          .map(note => {
+            const noteUrl = gitlabClient.getNoteUrl(project, mergeRequest, note.id);
+            const isInternal = note.internal ? ' [內部]' : '';
+            const isConfidential = note.confidential ? ' [機密]' : '';
+            return `• 評論 #${note.id}${isInternal}${isConfidential}\n  作者: ${note.author.name} (@${note.author.username})\n  時間: ${new Date(note.created_at).toLocaleString()}\n  內容: ${note.body}\n  URL: ${noteUrl}`;
+          }).join('\n\n');
+
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `合併請求 !${mergeRequestIid} 的評論 (${notes.filter(n => !n.system).length} 則):\n\n${notesList || '沒有評論'}`,
+            },
+          ],
+        };
+      }
+
+      case 'gitlab_create_mr_note': {
+        const { projectId, mergeRequestIid, body, confidential, internal } = args as {
+          projectId: string;
+          mergeRequestIid: number;
+          body: string;
+          confidential?: boolean;
+          internal?: boolean;
+        };
+
+        const note = await gitlabClient.createMergeRequestNote(projectId, mergeRequestIid, {
+          body,
+          confidential,
+          internal,
+        });
+
+        const project = await gitlabClient.getProject(projectId);
+        const mergeRequest = await gitlabClient.getMergeRequest(projectId, mergeRequestIid);
+        const noteUrl = gitlabClient.getNoteUrl(project, mergeRequest, note.id);
+
+        const typeLabel = internal ? ' (內部評論)' : confidential ? ' (機密評論)' : '';
+
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `評論發表成功${typeLabel}！\n評論 #${note.id}\n合併請求: !${mergeRequestIid}\n作者: ${note.author.name}\n時間: ${new Date(note.created_at).toLocaleString()}\nURL: ${noteUrl}\n\n內容:\n${note.body}`,
+            },
+          ],
+        };
+      }
+
+      case 'gitlab_update_mr_note': {
+        const { projectId, mergeRequestIid, noteId, body } = args as {
+          projectId: string;
+          mergeRequestIid: number;
+          noteId: number;
+          body: string;
+        };
+
+        const updatedNote = await gitlabClient.updateMergeRequestNote(projectId, mergeRequestIid, noteId, { body });
+
+        const project = await gitlabClient.getProject(projectId);
+        const mergeRequest = await gitlabClient.getMergeRequest(projectId, mergeRequestIid);
+        const noteUrl = gitlabClient.getNoteUrl(project, mergeRequest, updatedNote.id);
+
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `評論更新成功！\n評論 #${updatedNote.id}\n合併請求: !${mergeRequestIid}\n更新時間: ${new Date(updatedNote.updated_at).toLocaleString()}\nURL: ${noteUrl}\n\n新內容:\n${updatedNote.body}`,
+            },
+          ],
+        };
+      }
+
+      case 'gitlab_delete_mr_note': {
+        const { projectId, mergeRequestIid, noteId } = args as {
+          projectId: string;
+          mergeRequestIid: number;
+          noteId: number;
+        };
+
+        await gitlabClient.deleteMergeRequestNote(projectId, mergeRequestIid, noteId);
+
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `評論 #${noteId} 已成功刪除！\n合併請求: !${mergeRequestIid}`,
+            },
+          ],
+        };
+      }
+
+      // Issue 評論相關案例
+      case 'gitlab_get_issue_notes': {
+        const { projectId, issueIid, sort, order_by, per_page } = args as {
+          projectId: string;
+          issueIid: number;
+          sort?: 'asc' | 'desc';
+          order_by?: 'created_at' | 'updated_at';
+          per_page?: number;
+        };
+
+        const notes = await gitlabClient.getIssueNotes(projectId, issueIid, {
+          sort,
+          order_by,
+          per_page,
+        });
+
+        const project = await gitlabClient.getProject(projectId);
+        const issue = await gitlabClient.getIssue(projectId, issueIid);
+
+        const notesList = notes
+          .filter(note => !note.system) // 過濾掉系統自動產生的評論
+          .map(note => {
+            const issueUrl = gitlabClient.getIssueUrl(project, issue);
+            const noteUrl = `${issueUrl}#note_${note.id}`;
+            const isInternal = note.internal ? ' [內部]' : '';
+            const isConfidential = note.confidential ? ' [機密]' : '';
+            return `• 評論 #${note.id}${isInternal}${isConfidential}\n  作者: ${note.author.name} (@${note.author.username})\n  時間: ${new Date(note.created_at).toLocaleString()}\n  內容: ${note.body}\n  URL: ${noteUrl}`;
+          }).join('\n\n');
+
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `問題 #${issueIid} 的評論 (${notes.filter(n => !n.system).length} 則):\n\n${notesList || '沒有評論'}`,
+            },
+          ],
+        };
+      }
+
+      case 'gitlab_create_issue_note': {
+        const { projectId, issueIid, body, confidential, internal } = args as {
+          projectId: string;
+          issueIid: number;
+          body: string;
+          confidential?: boolean;
+          internal?: boolean;
+        };
+
+        const note = await gitlabClient.createIssueNote(projectId, issueIid, {
+          body,
+          confidential,
+          internal,
+        });
+
+        const project = await gitlabClient.getProject(projectId);
+        const issue = await gitlabClient.getIssue(projectId, issueIid);
+        const issueUrl = gitlabClient.getIssueUrl(project, issue);
+        const noteUrl = `${issueUrl}#note_${note.id}`;
+
+        const typeLabel = internal ? ' (內部評論)' : confidential ? ' (機密評論)' : '';
+
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `評論發表成功${typeLabel}！\n評論 #${note.id}\n問題: #${issueIid}\n作者: ${note.author.name}\n時間: ${new Date(note.created_at).toLocaleString()}\nURL: ${noteUrl}\n\n內容:\n${note.body}`,
             },
           ],
         };

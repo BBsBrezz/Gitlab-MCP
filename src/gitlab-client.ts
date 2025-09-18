@@ -7,8 +7,10 @@ import {
   GitLabJob,
   GitLabIssue,
   GitLabMergeRequest,
+  GitLabNote,
   CreateIssueRequest,
   CreateMergeRequestRequest,
+  CreateNoteRequest,
 } from './types.js';
 
 export class GitLabClient {
@@ -500,5 +502,72 @@ export class GitLabClient {
 
   getFileUrl(project: GitLabProject, filePath: string, ref: string = 'main'): string {
     return `${project.web_url}/-/blob/${ref}/${filePath}`;
+  }
+
+  // Merge Request 評論相關方法
+  async getMergeRequestNotes(projectId: number | string, mergeRequestIid: number, options: {
+    sort?: 'asc' | 'desc';
+    order_by?: 'created_at' | 'updated_at';
+    per_page?: number;
+  } = {}): Promise<GitLabNote[]> {
+    const resolvedId = await this.resolveProjectId(projectId);
+    const params = {
+      sort: options.sort || 'asc',
+      order_by: options.order_by || 'created_at',
+      per_page: options.per_page || 100,
+    };
+
+    const response = await this.client.get(`/projects/${resolvedId}/merge_requests/${mergeRequestIid}/notes`, { params });
+    return response.data;
+  }
+
+  async getMergeRequestNote(projectId: number | string, mergeRequestIid: number, noteId: number): Promise<GitLabNote> {
+    const resolvedId = await this.resolveProjectId(projectId);
+    const response = await this.client.get(`/projects/${resolvedId}/merge_requests/${mergeRequestIid}/notes/${noteId}`);
+    return response.data;
+  }
+
+  async createMergeRequestNote(projectId: number | string, mergeRequestIid: number, noteData: CreateNoteRequest): Promise<GitLabNote> {
+    const resolvedId = await this.resolveProjectId(projectId);
+    const response = await this.client.post(`/projects/${resolvedId}/merge_requests/${mergeRequestIid}/notes`, noteData);
+    return response.data;
+  }
+
+  async updateMergeRequestNote(projectId: number | string, mergeRequestIid: number, noteId: number, noteData: Partial<CreateNoteRequest>): Promise<GitLabNote> {
+    const resolvedId = await this.resolveProjectId(projectId);
+    const response = await this.client.put(`/projects/${resolvedId}/merge_requests/${mergeRequestIid}/notes/${noteId}`, noteData);
+    return response.data;
+  }
+
+  async deleteMergeRequestNote(projectId: number | string, mergeRequestIid: number, noteId: number): Promise<void> {
+    const resolvedId = await this.resolveProjectId(projectId);
+    await this.client.delete(`/projects/${resolvedId}/merge_requests/${mergeRequestIid}/notes/${noteId}`);
+  }
+
+  // Issue 評論相關方法（作為額外功能）
+  async getIssueNotes(projectId: number | string, issueIid: number, options: {
+    sort?: 'asc' | 'desc';
+    order_by?: 'created_at' | 'updated_at';
+    per_page?: number;
+  } = {}): Promise<GitLabNote[]> {
+    const resolvedId = await this.resolveProjectId(projectId);
+    const params = {
+      sort: options.sort || 'asc',
+      order_by: options.order_by || 'created_at',
+      per_page: options.per_page || 100,
+    };
+
+    const response = await this.client.get(`/projects/${resolvedId}/issues/${issueIid}/notes`, { params });
+    return response.data;
+  }
+
+  async createIssueNote(projectId: number | string, issueIid: number, noteData: CreateNoteRequest): Promise<GitLabNote> {
+    const resolvedId = await this.resolveProjectId(projectId);
+    const response = await this.client.post(`/projects/${resolvedId}/issues/${issueIid}/notes`, noteData);
+    return response.data;
+  }
+
+  getNoteUrl(project: GitLabProject, mergeRequest: GitLabMergeRequest, noteId: number): string {
+    return `${project.web_url}/-/merge_requests/${mergeRequest.iid}#note_${noteId}`;
   }
 }

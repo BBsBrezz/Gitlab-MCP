@@ -255,3 +255,35 @@ export interface CreateMergeRequestRequest {
   allow_maintainer_to_push?: boolean;
   squash?: boolean;
 }
+
+export interface GitLabNote {
+  id: number;
+  type: string;
+  body: string;
+  attachment: any | null;
+  author: {
+    id: number;
+    username: string;
+    name: string;
+    email: string;
+    avatar_url: string;
+  };
+  created_at: string;
+  updated_at: string;
+  system: boolean;
+  noteable_id: number;
+  noteable_type: string;
+  resolvable: boolean;
+  resolved: boolean | null;
+  resolved_by: any | null;
+  resolved_at: string | null;
+  confidential: boolean;
+  internal: boolean;
+  noteable_iid: number;
+}
+
+export interface CreateNoteRequest {
+  body: string;
+  confidential?: boolean;
+  internal?: boolean;
+}
