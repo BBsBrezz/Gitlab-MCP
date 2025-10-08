@@ -1,6 +1,6 @@
 interface Config {
-  gitlabBaseUrl: string;
-  gitlabAccessToken: string;
+  githubBaseUrl: string;
+  githubAccessToken: string;
   sentryUrl?: string;
   sentryOrgSlug?: string;
   sentryProject?: string;
@@ -11,8 +11,8 @@ interface Config {
 
 function validateConfig(): Config {
   const requiredVars = {
-    gitlabBaseUrl: process.env.GITLAB_BASE_URL,
-    gitlabAccessToken: process.env.GITLAB_ACCESS_TOKEN,
+    githubBaseUrl: process.env.GITHUB_BASE_URL || 'https://api.github.com',
+    githubAccessToken: process.env.GITHUB_ACCESS_TOKEN,
   };
 
   for (const [key, value] of Object.entries(requiredVars)) {
@@ -22,8 +22,8 @@ function validateConfig(): Config {
   }
 
   return {
-    gitlabBaseUrl: requiredVars.gitlabBaseUrl!,
-    gitlabAccessToken: requiredVars.gitlabAccessToken!,
+    githubBaseUrl: requiredVars.githubBaseUrl!,
+    githubAccessToken: requiredVars.githubAccessToken!,
     sentryUrl: process.env.SENTRY_URL,
     sentryOrgSlug: process.env.SENTRY_ORG_SLUG,
     sentryProject: process.env.SENTRY_PROJECT,

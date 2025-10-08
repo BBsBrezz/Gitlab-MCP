@@ -1,7 +1,7 @@
 {
-  "name": "gitlab-mcp",
+  "name": "github-mcp",
   "version": "1.0.0",
-  "description": "MCP server for GitLab operations with AI-powered code analysis",
+  "description": "MCP server for GitHub operations with complete GitHub API integration",
   "main": "dist/index.js",
   "type": "module",
   "scripts": {

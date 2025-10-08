@@ -1,289 +1,374 @@
-export interface GitLabProject {
+export interface GitHubRepository {
   id: number;
+  node_id: string;
   name: string;
-  path: string;
-  path_with_namespace: string;
-  description: string;
-  default_branch: string;
-  web_url: string;
+  full_name: string;
+  owner: {
+    login: string;
+    id: number;
+    avatar_url: string;
+    html_url: string;
+  };
+  private: boolean;
+  html_url: string;
+  description: string | null;
+  fork: boolean;
+  url: string;
   created_at: string;
-  last_activity_at: string;
-  visibility: string;
-  issues_enabled: boolean;
-  merge_requests_enabled: boolean;
-  wiki_enabled: boolean;
-  jobs_enabled: boolean;
-  snippets_enabled: boolean;
-  container_registry_enabled: boolean;
-  service_desk_enabled: boolean;
-  star_count: number;
+  updated_at: string;
+  pushed_at: string;
+  homepage: string | null;
+  size: number;
+  stargazers_count: number;
+  watchers_count: number;
+  language: string | null;
+  has_issues: boolean;
+  has_projects: boolean;
+  has_downloads: boolean;
+  has_wiki: boolean;
+  has_pages: boolean;
   forks_count: number;
+  open_issues_count: number;
+  default_branch: string;
+  visibility: string;
 }
 
-export interface GitLabCommit {
-  id: string;
-  short_id: string;
-  title: string;
-  message: string;
-  author_name: string;
-  author_email: string;
-  authored_date: string;
-  committer_name: string;
-  committer_email: string;
-  committed_date: string;
-  web_url: string;
-  stats: {
+export interface GitHubCommit {
+  sha: string;
+  node_id: string;
+  commit: {
+    author: {
+      name: string;
+      email: string;
+      date: string;
+    };
+    committer: {
+      name: string;
+      email: string;
+      date: string;
+    };
+    message: string;
+    tree: {
+      sha: string;
+      url: string;
+    };
+    url: string;
+    comment_count: number;
+  };
+  url: string;
+  html_url: string;
+  comments_url: string;
+  author: {
+    login: string;
+    id: number;
+    avatar_url: string;
+    html_url: string;
+  } | null;
+  committer: {
+    login: string;
+    id: number;
+    avatar_url: string;
+    html_url: string;
+  } | null;
+  parents: Array<{
+    sha: string;
+    url: string;
+    html_url: string;
+  }>;
+  stats?: {
     additions: number;
     deletions: number;
     total: number;
   };
+  files?: Array<{
+    sha: string;
+    filename: string;
+    status: string;
+    additions: number;
+    deletions: number;
+    changes: number;
+    blob_url: string;
+    raw_url: string;
+    contents_url: string;
+    patch?: string;
+  }>;
 }
 
-export interface GitLabPipeline {
+export interface GitHubWorkflowRun {
   id: number;
-  iid: number;
-  project_id: number;
+  name: string;
+  node_id: string;
+  head_branch: string;
+  head_sha: string;
+  run_number: number;
+  event: string;
   status: string;
-  ref: string;
-  sha: string;
-  before_sha: string;
-  tag: boolean;
-  yaml_errors: string | null;
-  user?: {
-    id: number;
-    username: string;
-    name: string;
-    email: string;
-  } | null;
+  conclusion: string | null;
+  workflow_id: number;
+  url: string;
+  html_url: string;
+  pull_requests: any[];
   created_at: string;
   updated_at: string;
-  started_at: string;
-  finished_at: string;
-  committed_at: string;
-  duration: number;
-  queued_duration: number;
-  coverage: string | null;
-  web_url: string;
+  run_started_at: string;
+  jobs_url: string;
+  logs_url: string;
+  check_suite_url: string;
+  artifacts_url: string;
+  cancel_url: string;
+  rerun_url: string;
+  head_commit: {
+    id: string;
+    tree_id: string;
+    message: string;
+    timestamp: string;
+    author: {
+      name: string;
+      email: string;
+    };
+    committer: {
+      name: string;
+      email: string;
+    };
+  };
+  repository: {
+    id: number;
+    name: string;
+    full_name: string;
+  };
+  head_repository: {
+    id: number;
+    name: string;
+    full_name: string;
+  };
 }
 
-export interface GitLabJob {
+export interface GitHubJob {
   id: number;
+  run_id: number;
+  run_url: string;
+  node_id: string;
+  head_sha: string;
+  url: string;
+  html_url: string;
   status: string;
-  stage: string;
-  name: string;
-  ref: string;
-  tag: boolean;
-  coverage: string | null;
-  allow_failure: boolean;
-  created_at: string;
+  conclusion: string | null;
   started_at: string;
-  finished_at: string;
-  duration: number;
-  queued_duration: number;
-  user: {
-    id: number;
-    username: string;
+  completed_at: string | null;
+  name: string;
+  steps: Array<{
     name: string;
-    email: string;
-  };
-  commit: {
-    id: string;
-    short_id: string;
-    title: string;
-    message: string;
-    author_name: string;
-    author_email: string;
-    authored_date: string;
-    committer_name: string;
-    committer_email: string;
-    committed_date: string;
-  };
-  pipeline: {
+    status: string;
+    conclusion: string | null;
+    number: number;
+    started_at: string;
+    completed_at: string | null;
+  }>;
+  check_run_url: string;
+  labels: string[];
+  runner_id: number;
+  runner_name: string;
+  runner_group_id: number;
+  runner_group_name: string;
+}
+
+export interface GitHubIssue {
+  id: number;
+  node_id: string;
+  url: string;
+  repository_url: string;
+  labels_url: string;
+  comments_url: string;
+  events_url: string;
+  html_url: string;
+  number: number;
+  state: string;
+  title: string;
+  body: string | null;
+  user: {
+    login: string;
     id: number;
-    project_id: number;
+    avatar_url: string;
+    html_url: string;
+  };
+  labels: Array<{
+    id: number;
+    node_id: string;
+    url: string;
+    name: string;
+    color: string;
+    default: boolean;
+    description: string | null;
+  }>;
+  assignee: {
+    login: string;
+    id: number;
+    avatar_url: string;
+    html_url: string;
+  } | null;
+  assignees: Array<{
+    login: string;
+    id: number;
+    avatar_url: string;
+    html_url: string;
+  }>;
+  milestone: any | null;
+  locked: boolean;
+  comments: number;
+  created_at: string;
+  updated_at: string;
+  closed_at: string | null;
+  author_association: string;
+}
+
+export interface GitHubPullRequest {
+  id: number;
+  node_id: string;
+  url: string;
+  html_url: string;
+  diff_url: string;
+  patch_url: string;
+  issue_url: string;
+  commits_url: string;
+  review_comments_url: string;
+  review_comment_url: string;
+  comments_url: string;
+  statuses_url: string;
+  number: number;
+  state: string;
+  locked: boolean;
+  title: string;
+  user: {
+    login: string;
+    id: number;
+    avatar_url: string;
+    html_url: string;
+  };
+  body: string | null;
+  labels: Array<{
+    id: number;
+    node_id: string;
+    url: string;
+    name: string;
+    color: string;
+    default: boolean;
+    description: string | null;
+  }>;
+  milestone: any | null;
+  active_lock_reason: string | null;
+  created_at: string;
+  updated_at: string;
+  closed_at: string | null;
+  merged_at: string | null;
+  merge_commit_sha: string | null;
+  assignee: {
+    login: string;
+    id: number;
+    avatar_url: string;
+    html_url: string;
+  } | null;
+  assignees: Array<{
+    login: string;
+    id: number;
+    avatar_url: string;
+    html_url: string;
+  }>;
+  requested_reviewers: Array<{
+    login: string;
+    id: number;
+    avatar_url: string;
+    html_url: string;
+  }>;
+  head: {
+    label: string;
     ref: string;
     sha: string;
-    status: string;
+    user: {
+      login: string;
+      id: number;
+      avatar_url: string;
+      html_url: string;
+    };
+    repo: any;
   };
-  web_url: string;
-}
-
-export interface GitLabIssue {
-  id: number;
-  iid: number;
-  project_id: number;
-  title: string;
-  description: string;
-  state: string;
-  created_at: string;
-  updated_at: string;
-  closed_at: string | null;
-  closed_by: any | null;
-  labels: string[];
-  milestone: any | null;
-  assignees: any[];
-  author: {
-    id: number;
-    username: string;
-    name: string;
-    email: string;
+  base: {
+    label: string;
+    ref: string;
+    sha: string;
+    user: {
+      login: string;
+      id: number;
+      avatar_url: string;
+      html_url: string;
+    };
+    repo: any;
   };
-  assignee: any | null;
-  user_notes_count: number;
-  merge_requests_count: number;
-  upvotes: number;
-  downvotes: number;
-  due_date: string | null;
-  confidential: boolean;
-  discussion_locked: boolean;
-  web_url: string;
-  time_stats: {
-    time_estimate: number;
-    total_time_spent: number;
-    human_time_estimate: string | null;
-    human_total_time_spent: string | null;
-  };
-  task_completion_status: {
-    count: number;
-    completed_count: number;
-  };
-  blocking_issues_count: number;
-  has_tasks: boolean;
-  task_status: string;
   _links: {
-    self: string;
-    notes: string;
-    award_emoji: string;
-    project: string;
-    closed_as_duplicate_of: string | null;
+    self: { href: string };
+    html: { href: string };
+    issue: { href: string };
+    comments: { href: string };
+    review_comments: { href: string };
+    review_comment: { href: string };
+    commits: { href: string };
+    statuses: { href: string };
   };
-}
-
-export interface GitLabMergeRequest {
-  id: number;
-  iid: number;
-  project_id: number;
-  title: string;
-  description: string;
-  state: string;
-  created_at: string;
-  updated_at: string;
-  merged_by: any | null;
-  merged_at: string | null;
-  closed_by: any | null;
-  closed_at: string | null;
-  target_branch: string;
-  source_branch: string;
-  user_notes_count: number;
-  upvotes: number;
-  downvotes: number;
-  author: {
-    id: number;
-    username: string;
-    name: string;
-    email: string;
-  };
-  assignees: any[];
-  assignee: any | null;
-  reviewers: any[];
-  source_project_id: number;
-  target_project_id: number;
-  labels: string[];
+  author_association: string;
+  auto_merge: any | null;
   draft: boolean;
-  work_in_progress: boolean;
-  milestone: any | null;
-  merge_when_pipeline_succeeds: boolean;
-  merge_status: string;
-  detailed_merge_status: string;
-  sha: string;
-  merge_commit_sha: string | null;
-  squash_commit_sha: string | null;
-  discussion_locked: boolean;
-  should_remove_source_branch: boolean;
-  force_remove_source_branch: boolean;
-  reference: string;
-  references: {
-    short: string;
-    relative: string;
-    full: string;
-  };
-  web_url: string;
-  time_stats: {
-    time_estimate: number;
-    total_time_spent: number;
-    human_time_estimate: string | null;
-    human_total_time_spent: string | null;
-  };
-  squash: boolean;
-  task_completion_status: {
-    count: number;
-    completed_count: number;
-  };
-  has_conflicts: boolean;
-  blocking_discussions_resolved: boolean;
-  approvals_before_merge: number;
+  merged: boolean;
+  mergeable: boolean | null;
+  rebaseable: boolean | null;
+  mergeable_state: string;
+  merged_by: {
+    login: string;
+    id: number;
+    avatar_url: string;
+    html_url: string;
+  } | null;
+  comments: number;
+  review_comments: number;
+  maintainer_can_modify: boolean;
+  commits: number;
+  additions: number;
+  deletions: number;
+  changed_files: number;
 }
 
 export interface CreateIssueRequest {
   title: string;
-  description?: string;
-  assignee_ids?: number[];
-  milestone_id?: number;
+  body?: string;
+  assignees?: string[];
+  milestone?: number;
   labels?: string[];
-  created_at?: string;
-  due_date?: string;
-  merge_request_to_resolve_discussions_of?: number;
-  discussion_to_resolve?: string;
-  weight?: number;
-  epic_id?: number;
-  epic_iid?: number;
 }
 
-export interface CreateMergeRequestRequest {
+export interface CreatePullRequestRequest {
   title: string;
-  source_branch: string;
-  target_branch: string;
-  description?: string;
-  assignee_ids?: number[];
-  assignee_id?: number;
-  reviewer_ids?: number[];
-  milestone_id?: number;
-  labels?: string[];
-  target_project_id?: number;
-  remove_source_branch?: boolean;
-  allow_collaboration?: boolean;
-  allow_maintainer_to_push?: boolean;
-  squash?: boolean;
+  head: string;
+  base: string;
+  body?: string;
+  maintainer_can_modify?: boolean;
+  draft?: boolean;
 }
 
-export interface GitLabNote {
+export interface GitHubComment {
   id: number;
-  type: string;
+  node_id: string;
+  url: string;
+  html_url: string;
   body: string;
-  attachment: any | null;
-  author: {
+  user: {
+    login: string;
     id: number;
-    username: string;
-    name: string;
-    email: string;
     avatar_url: string;
+    html_url: string;
   };
   created_at: string;
   updated_at: string;
-  system: boolean;
-  noteable_id: number;
-  noteable_type: string;
-  resolvable: boolean;
-  resolved: boolean | null;
-  resolved_by: any | null;
-  resolved_at: string | null;
-  confidential: boolean;
-  internal: boolean;
-  noteable_iid: number;
+  author_association: string;
 }
 
-export interface CreateNoteRequest {
+export interface CreateCommentRequest {
   body: string;
-  confidential?: boolean;
-  internal?: boolean;
 }
