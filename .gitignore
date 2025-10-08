@@ -39,4 +39,4 @@ Thumbs.db
 .nx/cache
 .nx/workspace-data
 
-vite.config.*.timestamp*
+vite.config.*.timestamp*.claude/
