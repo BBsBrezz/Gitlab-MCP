@@ -36,7 +36,7 @@ jobs:
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
           echo "🤖 啟動 AI Code Review Agent..."
-          echo "🔮 AI 模型: Google Gemini 1.5 Pro"
+          echo "🔮 AI 模型: Gemini 2.0 Flash Experimental"
           echo "📋 Repository: $GITHUB_REPOSITORY"
           echo "🔢 PR Number: $PR_NUMBER"
           echo ""
