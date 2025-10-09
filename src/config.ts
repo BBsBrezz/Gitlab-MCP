@@ -1,12 +1,6 @@
 interface Config {
   githubBaseUrl: string;
   githubAccessToken: string;
-  sentryUrl?: string;
-  sentryOrgSlug?: string;
-  sentryProject?: string;
-  sentryAuthToken?: string;
-  openaiApiKey?: string;
-  anthropicApiKey?: string;
 }
 
 function validateConfig(): Config {
@@ -24,12 +18,6 @@ function validateConfig(): Config {
   return {
     githubBaseUrl: requiredVars.githubBaseUrl!,
     githubAccessToken: requiredVars.githubAccessToken!,
-    sentryUrl: process.env.SENTRY_URL,
-    sentryOrgSlug: process.env.SENTRY_ORG_SLUG,
-    sentryProject: process.env.SENTRY_PROJECT,
-    sentryAuthToken: process.env.SENTRY_AUTH_TOKEN,
-    openaiApiKey: process.env.OPENAI_API_KEY,
-    anthropicApiKey: process.env.ANTHROPIC_API_KEY,
   };
 }
 
