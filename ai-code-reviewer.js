@@ -1,24 +1,25 @@
 #!/usr/bin/env node
 
 /**
- * AI Code Reviewer using Claude API
+ * AI Code Reviewer using Google Gemini API
  *
  * This script:
  * 1. Uses MCP GitHubClient to fetch PR data (files, comments, diff)
- * 2. Sends data to Claude API for intelligent analysis
+ * 2. Sends data to Gemini API for intelligent analysis
  * 3. Posts AI-generated review comments to the PR
  */
 
-import Anthropic from '@anthropic-ai/sdk';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import { GitHubClient } from './dist/github-client.js';
 
-const CLAUDE_API_KEY = process.env.ANTHROPIC_API_KEY;
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const GITHUB_TOKEN = process.env.GITHUB_ACCESS_TOKEN;
 const REPO = process.env.GITHUB_REPOSITORY; // e.g., "BBsBrezz/Gitlab-MCP"
 const PR_NUMBER = parseInt(process.env.PR_NUMBER);
 
-if (!CLAUDE_API_KEY) {
-  console.error('❌ 錯誤: 需要設置 ANTHROPIC_API_KEY 環境變數');
+if (!GEMINI_API_KEY) {
+  console.error('❌ 錯誤: 需要設置 GEMINI_API_KEY 環境變數');
+  console.error('請前往 https://makersuite.google.com/app/apikey 獲取 API key');
   process.exit(1);
 }
 
@@ -32,8 +33,10 @@ if (!REPO || !PR_NUMBER) {
   process.exit(1);
 }
 
-const anthropic = new Anthropic({
-  apiKey: CLAUDE_API_KEY,
+// 初始化 Gemini
+const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+const model = genAI.getGenerativeModel({
+  model: "gemini-1.5-pro",  // 使用 Gemini 1.5 Pro (最強大的模型)
 });
 
 const githubClient = new GitHubClient();
@@ -68,7 +71,7 @@ async function fetchPRData() {
 }
 
 /**
- * 構建給 Claude 的 prompt
+ * 構建給 Gemini 的 prompt
  */
 function buildPrompt(prData) {
   const { pr, files, comments } = prData;
@@ -156,34 +159,28 @@ ${commentsInfo}
 
 請以清晰、建設性的方式提供反饋。對於好的實踐給予肯定，對於需要改進的地方給出具體建議。
 
-使用 Markdown 格式，包含表情符號使評論更易讀。`;
+使用 Markdown 格式，包含表情符號使評論更易讀。請用繁體中文回應。`;
 }
 
 /**
- * 使用 Claude API 分析程式碼
+ * 使用 Gemini API 分析程式碼
  */
-async function analyzeWithClaude(prompt) {
-  console.log('🤖 Claude AI 正在分析程式碼...\n');
+async function analyzeWithGemini(prompt) {
+  console.log('🤖 Google Gemini AI 正在分析程式碼...\n');
 
   try {
-    const message = await anthropic.messages.create({
-      model: 'claude-3-5-sonnet-20241022', // 最新的 Claude 3.5 Sonnet
-      max_tokens: 4096,
-      temperature: 0.3, // 較低的溫度以獲得更一致的輸出
-      messages: [
-        {
-          role: 'user',
-          content: prompt
-        }
-      ]
-    });
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const review = response.text();
 
-    const review = message.content[0].text;
     console.log('✅ AI 分析完成\n');
 
     return review;
   } catch (error) {
-    console.error('❌ Claude API 調用失敗:', error.message);
+    console.error('❌ Gemini API 調用失敗:', error.message);
+    if (error.response) {
+      console.error('錯誤詳情:', JSON.stringify(error.response.data, null, 2));
+    }
     throw error;
   }
 }
@@ -194,15 +191,15 @@ async function analyzeWithClaude(prompt) {
 async function postReview(review) {
   console.log('📝 發布 AI 評論到 PR...\n');
 
-  const commentBody = `## 🤖 AI Code Review by Claude
+  const commentBody = `## 🤖 AI Code Review by Google Gemini
 
 ${review}
 
 ---
 
-**審查模型**: Claude 3.5 Sonnet
+**審查模型**: Google Gemini 1.5 Pro
 **審查時間**: ${new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' })}
-**自動化工具**: GitHub MCP + Claude API
+**自動化工具**: GitHub MCP + Gemini API
 
 💡 這是 AI 自動生成的程式碼審查，建議結合人工審查一起參考。
 `;
@@ -229,7 +226,8 @@ ${review}
 async function main() {
   console.log('🚀 AI Code Review Agent 啟動\n');
   console.log(`📋 倉庫: ${REPO}`);
-  console.log(`🔢 PR: #${PR_NUMBER}\n`);
+  console.log(`🔢 PR: #${PR_NUMBER}`);
+  console.log(`🤖 AI 模型: Google Gemini 1.5 Pro\n`);
   console.log('═══════════════════════════════════════\n');
 
   try {
@@ -239,8 +237,8 @@ async function main() {
     // 2. 構建 prompt
     const prompt = buildPrompt(prData);
 
-    // 3. Claude 分析
-    const review = await analyzeWithClaude(prompt);
+    // 3. Gemini 分析
+    const review = await analyzeWithGemini(prompt);
 
     // 4. 發布評論
     await postReview(review);

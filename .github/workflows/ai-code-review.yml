@@ -30,12 +30,13 @@ jobs:
 
       - name: Run AI Code Review
         env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GITHUB_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
           echo "🤖 啟動 AI Code Review Agent..."
+          echo "🔮 AI 模型: Google Gemini 1.5 Pro"
           echo "📋 Repository: $GITHUB_REPOSITORY"
           echo "🔢 PR Number: $PR_NUMBER"
           echo ""
