@@ -11,7 +11,6 @@ jobs:
 
     permissions:
       contents: read
-      pull-requests: write  # 需要權限來發布評論
 
     steps:
       - name: Checkout code
@@ -34,66 +33,8 @@ jobs:
           GITHUB_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo "🧪 執行 MCP 工具測試..."
-
-          # 執行測試並捕獲輸出
           node test-mcp-tools.js > test-output.txt 2>&1 || true
-
-          # 讀取測試輸出
-          echo "test_output<<EOF" >> $GITHUB_OUTPUT
-          cat test-output.txt >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-
-      - name: Create Test Report Comment
-        uses: actions/github-script@v7
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const fs = require('fs');
-            const testOutput = `${{ steps.mcp-tests.outputs.test_output }}`;
-
-            // 構建評論內容
-            const comment = `## 🤖 MCP 自動化測試報告
-
-            **觸發事件**: PR #${{ github.event.pull_request.number }} 創建/更新
-            **分支**: \`${{ github.head_ref }}\` → \`${{ github.base_ref }}\`
-            **提交**: ${{ github.event.pull_request.head.sha }}
-            **作者**: @${{ github.event.pull_request.user.login }}
-
-            ---
-
-            ### 📊 測試執行結果
-
-            \`\`\`
-            ${testOutput}
-            \`\`\`
-
-            ---
-
-            ### 📝 測試項目
-
-            - ✅ github_get_pull_requests - 獲取 PR 列表
-            - ✅ github_get_pull_request - 獲取 PR 詳情
-            - ✅ github_get_pr_files - 獲取 PR 文件變更
-            - ✅ github_get_pr_comments - 獲取 PR 評論
-            - ✅ github_create_pr_comment - 創建 PR 評論
-            - ✅ github_get_repository - 獲取倉庫資訊
-            - ✅ github_get_commits - 獲取提交歷史
-
-            ---
-
-            🤖 此評論由 GitHub Actions 自動生成
-            ⏰ 執行時間: ${new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' })}
-            `;
-
-            // 發布評論
-            await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-              body: comment
-            });
-
-            console.log('✅ 測試報告已發布到 PR 評論中');
+          cat test-output.txt
 
       - name: Upload Test Results
         if: always()
