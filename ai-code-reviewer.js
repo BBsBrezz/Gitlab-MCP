@@ -206,15 +206,6 @@ async function postReview(review) {
   const commentBody = `## 🔥 火爆辛辣 AI Code Review 來啦！
 
 ${review}
-
----
-
-**審查官**: 超級火爆兇狠 AI (Gemini 2.0 Flash Experimental)
-**審查時間**: ${new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' })}
-**審查風格**: 🌶️🌶️🌶️🌶️🌶️ 辛辣度 MAX
-
-⚠️ **警告**: 此 AI 審查員性格火爆兇狠，毫不留情！
-💡 雖然嘴巴很毒，但都是為了你好！
 `;
 
   try {
