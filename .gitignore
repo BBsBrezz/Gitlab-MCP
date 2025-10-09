@@ -39,4 +39,11 @@ Thumbs.db
 .nx/cache
 .nx/workspace-data
 
-vite.config.*.timestamp*.claude/
+vite.config.*.timestamp*
+
+# Claude Code settings (contains tokens)
+.claude/
+
+# Environment variables
+.env
+.env.local
