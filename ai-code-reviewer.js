@@ -36,7 +36,7 @@ if (!REPO || !PR_NUMBER) {
 // 初始化 Gemini
 const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({
-  model: "gemini-pro",  // 使用 Gemini Pro (穩定版本)
+  model: "gemini-2.0-flash-exp",  // 使用 Gemini 2.0 Flash (實驗版本)
 });
 
 const githubClient = new GitHubClient();
@@ -197,7 +197,7 @@ ${review}
 
 ---
 
-**審查模型**: Google Gemini Pro
+**審查模型**: Gemini 2.0 Flash Experimental
 **審查時間**: ${new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' })}
 **自動化工具**: GitHub MCP + Gemini API
 
@@ -227,7 +227,7 @@ async function main() {
   console.log('🚀 AI Code Review Agent 啟動\n');
   console.log(`📋 倉庫: ${REPO}`);
   console.log(`🔢 PR: #${PR_NUMBER}`);
-  console.log(`🤖 AI 模型: Google Gemini Pro\n`);
+  console.log(`🤖 AI 模型: Gemini 2.0 Flash Experimental\n`);
   console.log('═══════════════════════════════════════\n');
 
   try {
