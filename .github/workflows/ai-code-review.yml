@@ -1,0 +1,54 @@
+name: AI Code Review
+
+# 當 PR 被創建或更新時觸發 AI 審查
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  ai-code-review:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build TypeScript
+        run: npm run build
+
+      - name: Run AI Code Review
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GITHUB_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          echo "🤖 啟動 AI Code Review Agent..."
+          echo "🔮 AI 模型: Google Gemini 1.5 Pro"
+          echo "📋 Repository: $GITHUB_REPOSITORY"
+          echo "🔢 PR Number: $PR_NUMBER"
+          echo ""
+
+          node ai-code-reviewer.js
+
+      - name: Upload Review Log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ai-code-review-log
+          path: |
+            *.log
+          retention-days: 30
+          if-no-files-found: ignore
