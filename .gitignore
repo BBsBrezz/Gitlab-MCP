@@ -47,3 +47,8 @@ vite.config.*.timestamp*
 # Environment variables
 .env
 .env.local
+
+# Temporary scripts (for testing and PR creation)
+create-*.js
+test-*.js
+update-*.js
