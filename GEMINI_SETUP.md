@@ -1,6 +1,6 @@
 # 🔮 Google Gemini AI Code Review 設置指南
 
-本專案使用 **Google Gemini 1.5 Pro** 作為 AI Code Review Agent，自動分析每個 Pull Request 並提供專業的程式碼審查建議。
+本專案使用 **Google Gemini 2.5 flash** 作為 AI Code Review Agent，自動分析每個 Pull Request 並提供專業的程式碼審查建議。
 
 ---
 
